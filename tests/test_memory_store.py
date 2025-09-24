@@ -25,7 +25,7 @@ class TestMemoryStore(unittest.TestCase):
         self.assertIsNone(memory_store._store.get("nonexistent"))
     
     def test_store_empty_service(self): 
-        memory_store._store_api_key("", "")
+        memory_store.store_api_key("", "")
         #Nothing should be stored
         self.assertEqual(len(memory_store._store), 0)
         
