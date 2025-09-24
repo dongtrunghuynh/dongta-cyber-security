@@ -1,26 +1,27 @@
-
+# main.py
 def choose_backend():
     while True:
         print("Choose storage backend:")
-        print("1. In-Memory Store")
-        print("2. File-Based Store")
+        print("1. In-Memory Store (temporary)")
+        print("2. File-Based Store (persistent)")
         choice = input("Enter 1 or 2: ")
         if choice == "1":
-            from storage import memory_store
+            from storage import memory_store as store
             print("Using In-Memory Store (temporary, lost on exit).")
-            return memory_store
+            return store, "In-Memory Store"
         
         elif choice == "2":
-            from storage import file_store
+            from storage import file_store as store
             print("Using File-Based Store (persistent).")
-            return store
+            return store, "File-Based Store"
         else:
             print("Invalid choice. Please try again.")
 
 def main():
-    store = choose_backend()
+    store, backend_name = choose_backend()
+    
     while True:
-        print("\nSecrects Manager (In Memory)")
+        print(f"\nSecrets Manager ({backend_name})")
         print("1. Store API Key")
         print("2. Retrieve API Key")
         print("3. Exit Program")
@@ -30,7 +31,7 @@ def main():
         if choice == "1":
             service = input("Service Name: ")
             api_key = input("API Key: ")
-            success = memory_store.store_api_key(service, api_key)
+            success = store.store_api_key(service, api_key)
             if success:
                 print(f"API Key for {service} stored successfully.")
             else:
@@ -38,7 +39,7 @@ def main():
         
         elif choice == "2":
             service = input("Service Name: ")
-            api_key = memory_store.retrieve_api_key(service)
+            api_key = store.retrieve_api_key(service)
             if api_key:
                 print(f"API Key for {service}: {api_key}")
             else:
@@ -50,6 +51,6 @@ def main():
         
         else:
             print("Invalid choice. Please try again.")
+
 if __name__ == "__main__":
     main()
-        
