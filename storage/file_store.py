@@ -3,7 +3,7 @@ from utils import io_utils
 import os
 from pathlib import Path
 
-FILE_PATH = "secrects.json" # file will becreated in project root
+FILE_PATH = "secrets.json" # file will be created in project root
 
 def store_api_key(service, api_key):
     """Store API key in JSON file."""
