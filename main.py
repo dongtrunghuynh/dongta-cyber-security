@@ -18,6 +18,7 @@ def choose_backend():
             print("Invalid choice. Please try again.")
 
 def main():
+    store = choose_backend()
     while True:
         print("\nSecrects Manager (In Memory)")
         print("1. Store API Key")
