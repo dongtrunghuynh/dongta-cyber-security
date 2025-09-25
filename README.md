@@ -1,15 +1,47 @@
-Exercise: Secrets Manager
-Design an API key storage system to store API keys for services. The
-program should present two options to users to store and retrieve
-passwords. You can use either an in-memory storage or store your
-credentials in a file.
-For storing, the program should ask for the inputs and store the password
-securely. The inputs are:
-String: ServiceName
-String: APIKey
-For retrieving the program asks for the service name and retrieves the
-API key.
+# Secrets Manager - Cybersecurity Capstone Project
 
-Extra Credit (Optional)
-1.Experiment with storing your passwords in a database (e.g. SQLite,
-MySQL, etc.) and retrieving that at runtime so the credentials persist.
+A Python-based Secrets Manager that allows users to securely store and retrieve API keys or passwords. The project supports **four storage backends**, including encrypted file storage and a SQLite database.
+
+---
+
+## **Features**
+
+1. **In-Memory Store** - Temporary storage in memory (lost on exit).  
+2. **File-Based Store** - Persistent storage in plain JSON file.  
+3. **Encrypted File Store** - Persistent and encrypted storage using `cryptography`.  
+4. **Database Store (SQLite)** - Persistent storage in SQLite database.
+
+---
+
+## **Folder Structure**
+
+secrets_manager/
+│
+├── main.py
+├── secrets.json # optional, created automatically
+├── secret.key # optional, created automatically for encrypted store
+├── secrets.db # SQLite DB, created automatically
+│
+├── storage/
+│ ├── init.py
+│ ├── memory_store.py
+│ ├── file_store.py
+│ ├── encrypted_file_store.py
+│ └── db_store.py
+│
+└── utils/
+├── init.py
+└── io_utils.py
+
+
+---
+
+## **Setup Instructions**
+
+1. Clone or download the repository.  
+2. Make sure Python 3.8+ is installed.  
+3. Install dependencies (only needed for encrypted store):
+
+```bash
+pip install cryptography
+```

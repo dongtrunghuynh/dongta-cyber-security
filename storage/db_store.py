@@ -25,7 +25,7 @@ def store_api_key(service, api_key):
     conn.close()
     return True
 
-def retreive_api_key(service):
+def retrieve_api_key(service):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""SELECT api_key FROM secrets WHERE service = ?""", (service,))
