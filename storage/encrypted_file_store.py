@@ -5,6 +5,7 @@ from pathlib import Path
 import getpass
 
 from cryptography.fernet import Fernet, InvalidToken
+from utils import crypto_utils
 from utils.crypto_utils import derive_key_from_passphrase
 
 FILE_PATH = "secrets.enc"   # encrypted blob
