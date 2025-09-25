@@ -2,7 +2,7 @@ import unittest
 import os
 from storage import file_store
 
-FILE_PATH = "secrects.json"
+FILE_PATH = "secrets.json"
 
 class TestFileStore(unittest.TestCase):
     
