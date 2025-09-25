@@ -1,35 +1,80 @@
-from cryptography.fernet import Fernet
-from utils import io_utils
+# storage/encrypted_file_store.py
+import json
+import os
 from pathlib import Path
+import getpass
 
-FILE_PATH = "secrets.enc"
-KEY_PATH = "secret.key"
+from cryptography.fernet import Fernet, InvalidToken
+from utils.crypto_utils import derive_key_from_passphrase
 
-def load_key():
-    """Load the encryption key from a file or generate a new one."""
-    path = Path(KEY_PATH)
-    if path.exists():
-        return path.read_bytes()
-    key = Fernet.generate_key()
-    path.write_bytes(key)
-    return key
+FILE_PATH = "secrets.enc"   # encrypted blob
+SALT_PATH = "salt.bin"      # salt used for KDF (binary)
 
-fernet = Fernet(load_key())
+def _ensure_salt():
+    """Return salt (create it if missing)."""
+    p = Path(SALT_PATH)
+    if not p.exists():
+        salt = os.urandom(16)
+        p.write_bytes(salt)
+        return salt
+    return p.read_bytes()
+
+def _get_fernet_from_passphrase(passphrase: str):
+    salt = _ensure_salt()
+    key = derive_key_from_passphrase(passphrase, salt)
+    return Fernet(key)
+
+def _read_store(fernet):
+    """Return the decrypted dict, or {} if file missing/empty."""
+    p = Path(FILE_PATH)
+    if not p.exists() or p.stat().st_size == 0:
+        return {}
+    try:
+        ciphertext = p.read_bytes()
+        plaintext = fernet.decrypt(ciphertext)
+        return json.loads(plaintext.decode())
+    except (InvalidToken, ValueError, json.JSONDecodeError):
+        # InvalidToken => wrong passphrase or corrupted file
+        raise
+
+def _write_store(fernet, store_dict):
+    plaintext = json.dumps(store_dict).encode()
+    ciphertext = fernet.encrypt(plaintext)
+    Path(FILE_PATH).write_bytes(ciphertext)
 
 def store_api_key(service, api_key):
-    """Store API key in encrypted JSON file."""
+    """Store API key encrypted in secrets.enc. Returns True on success."""
     if not service or not api_key:
-        return False 
-    store = io_utils.read_json_file(FILE_PATH)
-    encrypted_key = fernet.encrypt(api_key.encode()).decode()
-    store[service] = encrypted_key
-    io_utils.write_json_file(FILE_PATH, store)
+        return False
+
+    passphrase = getpass.getpass("Enter master passphrase (used to encrypt): ")
+    fernet = _get_fernet_from_passphrase(passphrase)
+
+    # load existing store (if any)
+    try:
+        store = _read_store(fernet)
+    except InvalidToken:
+        # Wrong passphrase for existing file
+        print("Error: wrong passphrase for existing encrypted store.")
+        return False
+
+    store[service] = api_key
+    _write_store(fernet, store)
     return True
 
 def retrieve_api_key(service):
-    """Retrieve API key from encrypted JSON file."""
-    store = io_utils.read_json_file(FILE_PATH)
-    encrypted_key = store.get(service)
-    if encrypted_key:
-        return fernet.decrypt(encrypted_key.encode()).decode()
-    return None
+    """Retrieve and decrypt API key for service. Returns string or None."""
+    if not Path(FILE_PATH).exists():
+        return None
+
+    passphrase = getpass.getpass("Enter master passphrase: ")
+    fernet = _get_fernet_from_passphrase(passphrase)
+
+    try:
+        store = _read_store(fernet)
+    except InvalidToken:
+        print("Error: wrong passphrase or corrupted encrypted file.")
+        return None
+
+    return store.get(service)
+

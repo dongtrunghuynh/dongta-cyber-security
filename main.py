@@ -1,4 +1,5 @@
 # main.py
+import getpass
 def choose_backend():
     while True:
         print("Choose storage backend:")
@@ -42,7 +43,7 @@ def main():
         
         if choice == "1":
             service = input("Service Name: ")
-            api_key = input("API Key: ")
+            api_key = getpass.getpass("API Key (input hidden): ")
             success = store.store_api_key(service, api_key)
             if success:
                 print(f"API Key for {service} stored successfully.")
