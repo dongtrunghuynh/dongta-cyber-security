@@ -4,7 +4,9 @@ def choose_backend():
         print("Choose storage backend:")
         print("1. In-Memory Store (temporary)")
         print("2. File-Based Store (persistent)")
-        choice = input("Enter 1 or 2: ")
+        print("3. Encrypted File Store (persistent, encrypted)")
+        print("4. Database Store (SQLite, persistent)")
+        choice = input("Enter your choice (1-4): ")
         if choice == "1":
             from storage import memory_store as store
             print("Using In-Memory Store (temporary, lost on exit).")
@@ -14,6 +16,16 @@ def choose_backend():
             from storage import file_store as store
             print("Using File-Based Store (persistent).")
             return store, "File-Based Store"
+        
+        elif choice == "3":
+            from storage import encrypted_file_store as store
+            print("Using Encrypted File Store (persistent, encrypted).")
+            return store, "Encrypted File Store"
+        
+        elif choice == "4":
+            from storage import db_store as store
+            print("Using Database Store (SQLite, persistent).")
+            return store, "Database Store"
         else:
             print("Invalid choice. Please try again.")
 
