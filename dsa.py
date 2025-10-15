@@ -68,18 +68,34 @@ def heap_gif(arr, filename='gifs/heap.gif'):
     heap = []
     frames = []
 
-    for val in arr:
-        heapq.heappush(heap, val)
-        ax.clear()
-        ax.set_title('Min Heap Insert')
-        ax.bar(range(len(heap)), heap, color='skyblue')
-        frames.append([ax.bar(range(len(heap)), heap, color='skyblue')])
+    # create persistent bars for maximum size, hide unused ones
+    max_n = len(arr)
+    bars = ax.bar(range(max_n), [0]*max_n, color='skyblue')
+    ax.set_ylim(0, max(arr) + 1)
 
-    heapq.heappop(heap)
-    ax.clear()
-    ax.set_title('Min Heap Pop')
-    ax.bar(range(len(heap)), heap, color='red')
-    frames.append([ax.bar(range(len(heap)), heap, color='red')])
+    for i, val in enumerate(arr):
+        heapq.heappush(heap, val)
+        # update bar heights and visibility for current heap
+        for idx, bar in enumerate(bars):
+            if idx < len(heap):
+                bar.set_height(heap[idx])
+                bar.set_visible(True)
+                bar.set_color('skyblue')
+            else:
+                bar.set_visible(False)
+        frames.append([bar for bar in bars])
+
+    # pop one element and show result
+    if heap:
+        heapq.heappop(heap)
+    for idx, bar in enumerate(bars):
+        if idx < len(heap):
+            bar.set_height(heap[idx])
+            bar.set_visible(True)
+            bar.set_color('red')
+        else:
+            bar.set_visible(False)
+    frames.append([bar for bar in bars])
 
     ani = animation.ArtistAnimation(fig, frames, interval=800, repeat=False)
     ani.save(filename, writer='pillow')
@@ -169,13 +185,17 @@ def dfs_bfs_gif(graph, start, filename='gifs/dfs_bfs.gif'):
     visited = []
     frames = []
 
-    # Simple DFS animation
+    # create persistent bars for nodes
+    bars = ax.bar(nodes, [0]*len(nodes), color='skyblue')
+    ax.set_ylim(0, 1.5)
+
+    # Simple DFS animation (update existing bars instead of clearing)
     def dfs(node):
         visited.append(node)
-        ax.clear()
-        ax.set_title('DFS Traversal')
-        ax.bar(nodes, [1 if n in visited else 0 for n in nodes], color=['red' if n==node else 'skyblue' for n in nodes])
-        frames.append([ax.bar(nodes, [1 if n in visited else 0 for n in nodes], color=['red' if n==node else 'skyblue' for n in nodes])])
+        for idx, n in enumerate(nodes):
+            bars[idx].set_height(1 if n in visited else 0)
+            bars[idx].set_color('red' if n == node else ('skyblue' if n not in visited else 'gray'))
+        frames.append([bar for bar in bars])
         for neighbor in graph[node]:
             if neighbor not in visited:
                 dfs(neighbor)
